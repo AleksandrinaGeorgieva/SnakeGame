@@ -64,12 +64,24 @@ namespace SnakeGame
             return currentDirection;
         }
 
-        public static void GenerateNewHead(int direction, Queue<Position> snakeElements)
+        public static bool GenerateNewHead(int direction, Queue<Position> snakeElements)
         {
             Position snakeHead = snakeElements.Last();
             Position nextDirection = directionOffsets[direction];
             Position snakeNewHead = new Position(snakeHead.X + nextDirection.X, snakeHead.Y + nextDirection.Y);
+
+            if(snakeNewHead.X < 0 || 
+                snakeNewHead.Y < 0 ||
+                snakeNewHead.X >= Console.WindowWidth ||
+                snakeNewHead.Y >= Console.WindowHeight)
+            {
+                Console.SetCursorPosition(0, 0);
+                Console.WriteLine("Game over!");
+                return false;
+            }
+
             snakeElements.Enqueue(snakeNewHead);
+            return true;
         }
 
         public static void DrawSnake(Queue<Position> snakeElements)
@@ -99,8 +111,8 @@ namespace SnakeGame
         static void Main(string[] args)
         {
             
-            int currentDirection = 0;      
-            
+            int currentDirection = 0;
+            bool success;
             Position food = GenerateFood();
 
             Queue<Position> snakeElements = new Queue<Position>();
@@ -125,9 +137,13 @@ namespace SnakeGame
                 if (Console.KeyAvailable)
                 {
                     currentDirection = CheckForDirectionChange();
-                }       
+                }
 
-                GenerateNewHead(currentDirection, snakeElements);
+                success = GenerateNewHead(currentDirection, snakeElements);
+                if (!success)
+                {
+                    break;
+                }
                 Thread.Sleep(100);
             }
         }

@@ -11,6 +11,7 @@ namespace SnakeGame
     {
         private static string snakeSign = "*";
         private static string foodSign = "@";
+        private static int bodyLength = 5;
         private static Random randomNumberGenerator = new Random();
         public struct Position
         {
@@ -35,7 +36,6 @@ namespace SnakeGame
         {
             Console.BufferHeight = Console.WindowHeight;
 
-            int bodyLength = 5;
             for (int x = 0; x < bodyLength; x++)
             {
                 Position pos = new Position(x, 0);
@@ -64,6 +64,14 @@ namespace SnakeGame
             return currentDirection;
         }
 
+        private static void EndGame(Queue<Position> snakeElements)
+        {
+            Console.SetCursorPosition(0, 0);
+            Console.WriteLine("Game over!");
+            int points = (snakeElements.Count - bodyLength + 1) * 100;
+            Console.WriteLine("Your points are: {0}", points);
+        }
+
         public static bool GenerateNewHead(int direction, Queue<Position> snakeElements)
         {
             Position snakeHead = snakeElements.Last();
@@ -73,10 +81,10 @@ namespace SnakeGame
             if(snakeNewHead.X < 0 || 
                 snakeNewHead.Y < 0 ||
                 snakeNewHead.X >= Console.WindowWidth ||
-                snakeNewHead.Y >= Console.WindowHeight)
+                snakeNewHead.Y >= Console.WindowHeight ||
+                snakeElements.Contains(snakeNewHead))
             {
-                Console.SetCursorPosition(0, 0);
-                Console.WriteLine("Game over!");
+                EndGame(snakeElements);
                 return false;
             }
 

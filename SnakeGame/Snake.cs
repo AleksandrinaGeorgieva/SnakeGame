@@ -12,6 +12,8 @@ namespace SnakeGame
         private static string snakeSign = "*";
         private static string foodSign = "@";
         private static int bodyLength = 5;
+        private static int sleepTime = 200;
+
         private static Random randomNumberGenerator = new Random();
         public struct Position
         {
@@ -35,7 +37,6 @@ namespace SnakeGame
         public static void InitGame(Queue<Position> q)
         {
             Console.BufferHeight = Console.WindowHeight;
-
             for (int x = 0; x < bodyLength; x++)
             {
                 Position pos = new Position(x, 0);
@@ -134,6 +135,7 @@ namespace SnakeGame
                 if(snakeElements.Last().X == food.X
                     && snakeElements.Last().Y == food.Y)
                 {
+                    sleepTime = sleepTime > 10 ? sleepTime - 10 : 10;
                     food = GenerateFood();
                 }else
                 {
@@ -152,7 +154,7 @@ namespace SnakeGame
                 {
                     break;
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(sleepTime);
             }
         }
     }

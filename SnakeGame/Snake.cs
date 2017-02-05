@@ -59,7 +59,12 @@ namespace SnakeGame
                 case ConsoleKey.RightArrow:
                     currentDirection = 0; break;
                 case ConsoleKey.Escape:
-                    Environment.Exit(0);
+                    Environment.Exit(0); break;
+                case ConsoleKey.Spacebar:
+                    do
+                    {
+
+                    } while (Console.ReadKey(true).Key != ConsoleKey.Spacebar);
                     break;
             }
             return currentDirection;
@@ -69,8 +74,8 @@ namespace SnakeGame
         {
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Game over!");
-            int points = (snakeElements.Count - bodyLength + 1) * 100;
-            Console.WriteLine("Your points are: {0}", points);
+            int points = (snakeElements.Count - bodyLength) * 100;
+            Console.WriteLine("Your points are: {0}", Math.Max(points, 0));
         }
 
         public static bool GenerateNewHead(int direction, Queue<Position> snakeElements)
@@ -79,14 +84,27 @@ namespace SnakeGame
             Position nextDirection = directionOffsets[direction];
             Position snakeNewHead = new Position(snakeHead.X + nextDirection.X, snakeHead.Y + nextDirection.Y);
 
-            if(snakeNewHead.X < 0 || 
-                snakeNewHead.Y < 0 ||
-                snakeNewHead.X >= Console.WindowWidth ||
-                snakeNewHead.Y >= Console.WindowHeight ||
-                snakeElements.Contains(snakeNewHead))
+            if(snakeElements.Contains(snakeNewHead))
             {
                 EndGame(snakeElements);
                 return false;
+            }
+
+            if(snakeNewHead.X < 0)
+            {
+                snakeNewHead.X = Console.WindowWidth - 1;
+            }
+            if(snakeNewHead.Y < 0)
+            {
+                snakeNewHead.Y = Console.WindowHeight - 1;
+            }
+            if (snakeNewHead.X >= Console.WindowWidth)
+            {
+                snakeNewHead.X = 0;
+            }
+            if (snakeNewHead.Y >= Console.WindowHeight)
+            {
+                snakeNewHead.Y = 0;
             }
 
             snakeElements.Enqueue(snakeNewHead);

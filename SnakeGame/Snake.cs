@@ -13,6 +13,7 @@ namespace SnakeGame
         private static string foodSign = "@";
         private static int bodyLength = 5;
         private static int sleepTime = 200;
+        private static int currentDirection = 0;
 
         private static Random randomNumberGenerator = new Random();
         public struct Position
@@ -33,6 +34,11 @@ namespace SnakeGame
                 new Position (0, 1), // down
                 new Position(0, -1) //top
             };
+
+        public static List<string> directionHead = new List<string>
+        {
+            ">", "<", "v", "^"
+        };
 
         public static void InitGame(Queue<Position> q)
         {
@@ -60,12 +66,6 @@ namespace SnakeGame
                     currentDirection = 0; break;
                 case ConsoleKey.Escape:
                     Environment.Exit(0); break;
-                case ConsoleKey.Spacebar:
-                    do
-                    {
-
-                    } while (Console.ReadKey(true).Key != ConsoleKey.Spacebar);
-                    break;
             }
             return currentDirection;
         }
@@ -116,7 +116,13 @@ namespace SnakeGame
             foreach (Position pos in snakeElements)
             {
                 Console.SetCursorPosition(pos.X, pos.Y);
-                Console.Write(snakeSign);
+                if (snakeElements.Last().Equals(pos))
+                {
+                    Console.Write(directionHead[currentDirection]);
+                }else
+                {
+                    Console.Write(snakeSign);
+                }                
             }
         }
 
@@ -143,7 +149,6 @@ namespace SnakeGame
         static void Main(string[] args)
         {
             
-            int currentDirection = 0;
             bool success;            
 
             Queue<Position> snakeElements = new Queue<Position>();

@@ -67,7 +67,6 @@ namespace SnakeGame
         public static void GenerateNewHead(int direction, Queue<Position> snakeElements)
         {
             Position snakeHead = snakeElements.Last();
-            snakeElements.Dequeue();
             Position nextDirection = directionOffsets[direction];
             Position snakeNewHead = new Position(snakeHead.X + nextDirection.X, snakeHead.Y + nextDirection.Y);
             snakeElements.Enqueue(snakeNewHead);
@@ -99,8 +98,7 @@ namespace SnakeGame
 
         static void Main(string[] args)
         {
-            //https://www.youtube.com/watch?v=dXng0W0R_Ks
-            //46:54
+            
             int currentDirection = 0;      
             
             Position food = GenerateFood();
@@ -111,7 +109,19 @@ namespace SnakeGame
             {
                 Console.Clear();
                 DrawSnake(snakeElements);
+
+                //check if food is eaten
+                if(snakeElements.Last().X == food.X
+                    && snakeElements.Last().Y == food.Y)
+                {
+                    food = GenerateFood();
+                }else
+                {
+                    snakeElements.Dequeue();
+                }
+
                 DrawFood(food);
+
                 if (Console.KeyAvailable)
                 {
                     currentDirection = CheckForDirectionChange();

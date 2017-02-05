@@ -108,12 +108,17 @@ namespace SnakeGame
             Console.Write(foodSign);
         }
 
-        public static Position GenerateFood()
+        public static Position GenerateFood(Queue<Position> snakeElements)
         {
-            Position food = new Position(
-                randomNumberGenerator.Next(0, Console.WindowWidth),
-                randomNumberGenerator.Next(0, Console.WindowHeight)
-            );
+            Position food;
+            do
+            {
+                food = new Position(
+                                randomNumberGenerator.Next(0, Console.WindowWidth),
+                                randomNumberGenerator.Next(0, Console.WindowHeight)
+                            );
+            } while (snakeElements.Contains(food));
+            
             return food;
         }
 
@@ -121,11 +126,11 @@ namespace SnakeGame
         {
             
             int currentDirection = 0;
-            bool success;
-            Position food = GenerateFood();
+            bool success;            
 
             Queue<Position> snakeElements = new Queue<Position>();
             InitGame(snakeElements);
+            Position food = GenerateFood(snakeElements);
             while (true)
             {
                 Console.Clear();
@@ -136,7 +141,7 @@ namespace SnakeGame
                     && snakeElements.Last().Y == food.Y)
                 {
                     sleepTime = sleepTime > 10 ? sleepTime - 10 : 10;
-                    food = GenerateFood();
+                    food = GenerateFood(snakeElements);
                 }else
                 {
                     snakeElements.Dequeue();

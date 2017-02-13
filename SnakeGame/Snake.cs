@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
+//todo - save where stopped
+//todo - add a game menu
 namespace SnakeGame
 {
     class Snake
@@ -14,6 +16,8 @@ namespace SnakeGame
         private static int bodyLength = 5;
         private static int sleepTime = 200;
         private static int currentDirection = 0;
+        private static string scoreOutputFileName = "Scores.txt";
+        private static Dictionary<string, int> scores = new Dictionary<string, int>();
 
         private static Random randomNumberGenerator = new Random();
         public struct Position
@@ -70,12 +74,70 @@ namespace SnakeGame
             return currentDirection;
         }
 
+        private static int CalculatePoints(Queue<Position> snakeElements)
+        {
+            int points = (snakeElements.Count - bodyLength) * 100;
+            return Math.Max(points, 0);
+        }
+
         private static void EndGame(Queue<Position> snakeElements)
         {
+            ReadScores();
+            Console.Clear();
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Game over!");
-            int points = (snakeElements.Count - bodyLength) * 100;
-            Console.WriteLine("Your points are: {0}", Math.Max(points, 0));
+            int points = CalculatePoints(snakeElements);
+            Console.WriteLine("Your points are: {0}", points);
+            SaveScore(snakeElements);
+            PrintScores();
+        }
+
+        private static void ReadScores()
+        {
+            if (File.Exists(scoreOutputFileName))
+            {
+                var lines = File
+                    .ReadAllLines(scoreOutputFileName)
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToArray();
+                string[] temp;
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    temp = lines[i]
+                        .Split('-')
+                        .ToArray();
+                    scores[temp[0].Trim()] = int.Parse(temp[1].Trim());
+                }
+            }
+        }
+
+        private static void PrintScores()
+        {
+            foreach (var player in scores.OrderByDescending(x => x.Value))
+            {
+                Console.WriteLine($"{player.Key}: {player.Value}");
+            }
+        }
+
+        private static void SaveScore(Queue<Position> snakeElements)
+        {            
+            Console.WriteLine("Enter your name:");
+            var name = Console.ReadLine();
+            if(name.Length > 0)
+            {
+                int points = CalculatePoints(snakeElements);
+                var maxScore = scores
+                    .Max(x => x.Value);
+                if (maxScore < points)
+                {
+                    Console.WriteLine("Highest score!!!");
+                }
+                var result = new string[] { $"\n{name} - {points}" };
+
+                scores[name] = points;
+
+                File.WriteAllLines(scoreOutputFileName, result);
+            }            
         }
 
         public static bool GenerateNewHead(int direction, Queue<Position> snakeElements)
@@ -129,6 +191,7 @@ namespace SnakeGame
         public static void DrawFood(Position food)
         {
             Console.SetCursorPosition(food.X, food.Y);
+
             Console.Write(foodSign);
         }
 
@@ -148,7 +211,6 @@ namespace SnakeGame
 
         static void Main(string[] args)
         {
-            
             bool success;            
 
             Queue<Position> snakeElements = new Queue<Position>();

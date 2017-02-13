@@ -18,6 +18,8 @@ namespace SnakeGame
         private static int currentDirection = 0;
         private static string scoreOutputFileName = "Scores.txt";
         private static Dictionary<string, int> scores = new Dictionary<string, int>();
+        private static Queue<Position> snakeElements = new Queue<Position>();
+        private static Position food = new Position();
 
         private static Random randomNumberGenerator = new Random();
         public struct Position
@@ -44,51 +46,67 @@ namespace SnakeGame
             ">", "<", "v", "^"
         };
 
-        public static void InitGame(Queue<Position> q)
+        public static void InitGame()
         {
             Console.BufferHeight = Console.WindowHeight;
             for (int x = 0; x < bodyLength; x++)
             {
                 Position pos = new Position(x, 0);
-                q.Enqueue(pos);
+                snakeElements.Enqueue(pos);
             }            
         }
 
-        public static int CheckForDirectionChange()
+        public static void CheckForDirectionChange()
         {
-            int currentDirection = 0;
+            //int currentDirection = 0;
             ConsoleKeyInfo userInput = Console.ReadKey();
             switch (userInput.Key)
             {
                 case ConsoleKey.LeftArrow:
-                    currentDirection = 1; break;
+                    if(currentDirection != 0)
+                    {
+                        currentDirection = 1;
+                    };
+                    break;
                 case ConsoleKey.UpArrow:
-                    currentDirection = 3; break;
+                    if (currentDirection != 2)
+                    {
+                        currentDirection = 3;
+                    };
+                    break;
                 case ConsoleKey.DownArrow:
-                    currentDirection = 2; break;
+                    if (currentDirection != 3)
+                    {
+                        currentDirection = 2;
+                    };
+                    break;
                 case ConsoleKey.RightArrow:
-                    currentDirection = 0; break;
+                    if (currentDirection != 1)
+                    {
+                        currentDirection = 0;
+                    };
+                    break;
                 case ConsoleKey.Escape:
                     Environment.Exit(0); break;
             }
-            return currentDirection;
+           // return currentDirection;
         }
 
-        private static int CalculatePoints(Queue<Position> snakeElements)
+        private static int CalculatePoints()
         {
             int points = (snakeElements.Count - bodyLength) * 100;
             return Math.Max(points, 0);
         }
 
-        private static void EndGame(Queue<Position> snakeElements)
+        private static void EndGame()
         {
             ReadScores();
             Console.Clear();
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Game over!");
-            int points = CalculatePoints(snakeElements);
+            int points = CalculatePoints();
             Console.WriteLine("Your points are: {0}", points);
-            SaveScore(snakeElements);
+            SaveScore();
             PrintScores();
         }
 
@@ -119,13 +137,13 @@ namespace SnakeGame
             }
         }
 
-        private static void SaveScore(Queue<Position> snakeElements)
+        private static void SaveScore()
         {            
             Console.WriteLine("Enter your name:");
             var name = Console.ReadLine();
             if(name.Length > 0)
             {
-                int points = CalculatePoints(snakeElements);
+                int points = CalculatePoints();
                 var maxScore = scores
                     .Max(x => x.Value);
                 if (maxScore < points)
@@ -140,15 +158,15 @@ namespace SnakeGame
             }            
         }
 
-        public static bool GenerateNewHead(int direction, Queue<Position> snakeElements)
+        public static bool GenerateNewHead()
         {
             Position snakeHead = snakeElements.Last();
-            Position nextDirection = directionOffsets[direction];
+            Position nextDirection = directionOffsets[currentDirection];
             Position snakeNewHead = new Position(snakeHead.X + nextDirection.X, snakeHead.Y + nextDirection.Y);
 
             if(snakeElements.Contains(snakeNewHead))
             {
-                EndGame(snakeElements);
+                EndGame();
                 return false;
             }
 
@@ -173,7 +191,7 @@ namespace SnakeGame
             return true;
         }
 
-        public static void DrawSnake(Queue<Position> snakeElements)
+        public static void DrawSnake()
         {
             foreach (Position pos in snakeElements)
             {
@@ -188,14 +206,23 @@ namespace SnakeGame
             }
         }
 
-        public static void DrawFood(Position food)
+        public static void DrawFood()
         {
-            Console.SetCursorPosition(food.X, food.Y);
+            try
+            {
+                Console.SetCursorPosition(food.X, food.Y);
+            }
+            catch (System.ArgumentOutOfRangeException e)
+            {
+                food = GenerateFood();
+                Console.SetCursorPosition(food.X, food.Y);
+            }
+            
 
             Console.Write(foodSign);
         }
 
-        public static Position GenerateFood(Queue<Position> snakeElements)
+        public static Position GenerateFood()
         {
             Position food;
             do
@@ -211,35 +238,35 @@ namespace SnakeGame
 
         static void Main(string[] args)
         {
-            bool success;            
+            bool success;
 
-            Queue<Position> snakeElements = new Queue<Position>();
-            InitGame(snakeElements);
-            Position food = GenerateFood(snakeElements);
+            food = GenerateFood();
+            InitGame();
+            
             while (true)
             {
                 Console.Clear();
-                DrawSnake(snakeElements);
+                DrawSnake();
 
                 //check if food is eaten
                 if(snakeElements.Last().X == food.X
                     && snakeElements.Last().Y == food.Y)
                 {
                     sleepTime = sleepTime > 10 ? sleepTime - 10 : 10;
-                    food = GenerateFood(snakeElements);
+                    food = GenerateFood();
                 }else
                 {
                     snakeElements.Dequeue();
                 }
 
-                DrawFood(food);
+                DrawFood();
 
                 if (Console.KeyAvailable)
                 {
-                    currentDirection = CheckForDirectionChange();
+                    CheckForDirectionChange();
                 }
 
-                success = GenerateNewHead(currentDirection, snakeElements);
+                success = GenerateNewHead();
                 if (!success)
                 {
                     break;
